@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization.Formatters.Binary;
+﻿using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace FinalTask
 {
@@ -6,58 +7,58 @@ namespace FinalTask
     {
         static void Main(string[] args)
         {
-            string StudentsPath = @"C:\Users\Eugene\OneDrive\Рабочий стол\Students";
-
+            //string StudentsPath = @"C:\Users\Eugene\OneDrive\Рабочий стол\Students";
+            string StudentsPath = @"C:\Users\Kira\Desktop\Students";
             Directory.CreateDirectory(StudentsPath);
-
-            //FileInfo file = new FileInfo(args[0]);
-
-            BinaryFormatter formatter = new BinaryFormatter();
 
             if (!File.Exists(args[0]))
             {
                 throw new Exception("file not found");
             }
 
-            using (var fs = new FileStream(args[0], FileMode.OpenOrCreate))
+            var students = Serialize(args[0]);
+            WriteFile(students, StudentsPath);
+
+        }
+
+        static Student[] Serialize(string path)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+
+            using (var fs = new FileStream(path, FileMode.OpenOrCreate))
             {
 #pragma warning disable SYSLIB0011 // Type or member is obsolete
                 var students = (Student[])formatter.Deserialize(fs);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
+                return students;
+            }
+        }
 
-                foreach (Student student in students)
+        static void WriteFile(Student[] students, string StudentsPath)
+        {
+            
+            foreach (Student student in students)
+            {
+                Console.Write(student.Name + "\t" + student.Group + "\t" + student.DateOfBirth);
+                Console.WriteLine("");
+
+                if (!File.Exists(StudentsPath + @"\" + student.Group + ".txt"))
                 {
-                    Console.Write(student.Name + "\t" + student.Group + "\t" + student.DateOfBirth);
-                    Console.WriteLine("");
-
-                    if (!File.Exists (StudentsPath + @"\" + student.Group + ".txt"))
-                    {
                     File.Create(StudentsPath + @"\" + student.Group + ".txt");
-                    }
-
-                    FileInfo fileInfo = new FileInfo(StudentsPath + @"\" + student.Group + ".txt");
-
-                    using (StreamWriter sw = File.AppendText(fileInfo.FullName))
-                    {
-                        sw.Write(student.Name);
-                        sw.Write(student.DateOfBirth + "\n");
-                        sw.Close();
-                    }
-                    
-                    
-                    //using (var frWrite = new FileStream(fileInfo.Name, FileMode.OpenOrCreate))
-                    //{
-                    //    formatter.Serialize(frWrite, student);
-                    //}
                 }
 
+                FileInfo fileInfo = new FileInfo(StudentsPath + @"\" + student.Group + ".txt");
 
-
-#pragma warning restore SYSLIB0011 // Type or member is obsolete
+                using (StreamWriter sw = fileInfo.AppendText())
+                {
+                    sw.WriteLine(student.Name + student.DateOfBirth + "\n");
+                    sw.Close();
+                }
             }
-
-
         }
+
     }
+
 
     [Serializable]
      class Student
@@ -74,6 +75,5 @@ namespace FinalTask
             Group = group;
             DateOfBirth = dateOfBirth;
         }
-
     }
 }
