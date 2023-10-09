@@ -1,4 +1,4 @@
-﻿class Program
+﻿class Program2
 {
     public static long directorySize = 0;
 
@@ -23,7 +23,13 @@
 
         foreach (FileInfo file in files)
         {
-            directorySize += file.Length;
+            try
+            {
+                directorySize += file.Length;
+            } catch (Exception ex)
+            {
+                Console.WriteLine($"Файл - {file} недоступен" + ex);
+            }
         }
     }
 
