@@ -2,7 +2,7 @@
   "profiles": {
     "Task4": {
       "commandName": "Project",
-      "commandLineArgs": "D:\\test\\Students.dat"
+      "commandLineArgs": "E:\\test\\Students.dat"
     }
   }
 }

@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.IO;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace FinalTask
@@ -7,69 +8,67 @@ namespace FinalTask
     {
         static void Main(string[] args)
         {
-            //string StudentsPath = @"C:\Users\Eugene\OneDrive\Рабочий стол\Students";
-            string StudentsPath = @"C:\Users\Kira\Desktop\Students";
+            string StudentsPath = @"C:\Users\Eugene\OneDrive\Рабочий стол\Students";
             Directory.CreateDirectory(StudentsPath);
 
             if (!File.Exists(args[0]))
             {
                 throw new Exception("file not found");
             }
-
             var students = Serialize(args[0]);
             WriteFile(students, StudentsPath);
+        }
 
+        private static void CreateFiles(Student[] students, string StudentsPath)
+        {
+            foreach (Student student in students)
+            {
+                Console.Write(student.Name + "\t" + student.Group + "\t" + student.DateOfBirth);
+                Console.WriteLine("");
+                if (!File.Exists(StudentsPath + @"\" + student.Group + ".txt"))
+                {
+                    File.Create(StudentsPath + @"\" + student.Group + ".txt");
+                }
+            }
         }
 
         static Student[] Serialize(string path)
         {
             BinaryFormatter formatter = new BinaryFormatter();
-
             using (var fs = new FileStream(path, FileMode.OpenOrCreate))
             {
 #pragma warning disable SYSLIB0011 // Type or member is obsolete
                 var students = (Student[])formatter.Deserialize(fs);
 #pragma warning restore SYSLIB0011 // Type or member is obsolete
+                foreach (var student in students)
+                {
+                    Console.WriteLine(student.Name + ", " +  student.DateOfBirth);
+                }
                 return students;
             }
         }
 
-        static void WriteFile(Student[] students, string StudentsPath)
+        static async void WriteFile(Student[] students, string StudentsPath)
         {
-            
             foreach (Student student in students)
             {
-                Console.Write(student.Name + "\t" + student.Group + "\t" + student.DateOfBirth);
-                Console.WriteLine("");
-
-                if (!File.Exists(StudentsPath + @"\" + student.Group + ".txt"))
+                string filePath = Path.Combine(StudentsPath, student.Group + ".txt");
+                using (StreamWriter sw = new StreamWriter(filePath, true))
                 {
-                    File.Create(StudentsPath + @"\" + student.Group + ".txt");
-                }
-
-                FileInfo fileInfo = new FileInfo(StudentsPath + @"\" + student.Group + ".txt");
-
-                using (StreamWriter sw = fileInfo.AppendText())
-                {
-                    sw.WriteLine(student.Name + student.DateOfBirth + "\n");
-                    sw.Close();
+                    sw.WriteLine(student.Name + ", " + student.DateOfBirth);
                 }
             }
         }
-
     }
 
 
     [Serializable]
-     class Student
+    class Student
     {
-         public string Name { get; set; }
-
+        public string Name { get; set; }
         public string Group { get; set; }
-
         public DateTime DateOfBirth { get; set; }
-
-        public Student(string name, string group, DateTime dateOfBirth) 
+        public Student(string name, string group, DateTime dateOfBirth)
         {
             Name = name;
             Group = group;
